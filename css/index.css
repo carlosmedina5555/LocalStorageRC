@@ -1,0 +1,13 @@
+body{
+    display: grid;
+    place-content: center;
+
+
+}
+
+form{
+    padding: .5rem;
+    border: solid black 5px;
+    border-radius: 12px;
+
+}
