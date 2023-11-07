@@ -4,63 +4,32 @@ const email = document.getElementById("email");
 const password = document.getElementById("pass");
 const repassword = document.getElementById("repass");
 const spanMessage = document.getElementById("message");
-const userList = document.getElementById("userList");
 configErrorMessage()
 
 //#endregion
 
 //#region variables
 let _email, 
-_pass, 
-_rePass = "";
-
-
-let users = []
+_pass = ""
 
 const keys = {
     user_key:"usuarios"
 }
 
-let lsUsers = localStorage.getItem(keys.user_key);
-if(lsUsers) {
-    users = JSON.parse(lsUsers)
-    refresh()
-}
 //#end region
 
 
-//#region class
-class User{
-    constructor(email, password, repassword) {
-        this.email = email;
-        this.password = password;
-        this.repassword = repassword;
-    }
-}
-//#endregion
-
 
 //#region function
-function addUser() {
-    let newUser = {
-        email: _email,
-        password: _pass,
-    }
-    users.push(newUser);
-    let json = JSON.stringify(users);
-    localStorage.setItem(keys.user_key, json);
-}
 
-function refresh() {
-    userList.innerHTML = "";
-    users.forEach(function(user) {
+function refresh(email) {
+    
         let li = document.createElement("li")
         let spanMail = document.createElement("span")
         spanMail.style.color ="green"
-        spanMail.innerText = user.email
+        spanMail.innerText = email + " " + "Activo"
         li.appendChild(spanMail)
         userList.appendChild(li)
-    });
 }
 
 function validateUser(){
@@ -68,8 +37,6 @@ function validateUser(){
         throw new Error("El Email es obligatorio");
     }else if (!_pass || _pass.trim() === "" ) {
         throw new Error("El password es obligatorio")
-    }else if (!_rePass || _rePass.trim() === "") {
-        throw new Error("Debe repetir la contraseña.")
     }
 }
 
@@ -79,6 +46,29 @@ function configErrorMessage(){
     spanMessage.style.fontSize = "8px";
     spanMessage.style.display ="block";
     spanMessage.style.textAlign = "center";
+}
+
+function login(email, password) {
+    const userLs = localStorage.getItem(keys.user_key);
+    if(!userLs) {
+        throw new error("No existe el usuario indicado");
+    }
+
+    const usuarios = JSON.parse(userLs);
+    const usuario = usuarios.find(function(user){
+        return user.email === email;
+    });
+
+    if(!usuario) {
+        throw new Error("El usuario o la contraseña no son correctas");
+    }
+
+    if (usuario.password === password) {
+        return true;
+        
+    } else {
+        throw new Error("El usuario o la contraseña no son correctas");
+    }
 }
 
 
@@ -94,17 +84,13 @@ password.addEventListener("change", function(e){
     _pass = e.target.value;
 })
 
-repassword.addEventListener("change", function(e){
-    _rePass = e.target.value;
-})
-
 bntRegistro.addEventListener("click", function(e){
     e.preventDefault();
-    try
-    {
-        validateUser()
-        addUser()
-        refresh()
+    try{
+        validateUser();
+       if(login(_email, _pass)){
+        refresh(_email)
+       }
 
     }catch(ex) {
         spanMessage.innerText = ex.message;
